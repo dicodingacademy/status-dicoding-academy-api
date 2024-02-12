@@ -18,5 +18,6 @@
         "vue"
     ],
     "rules": {
+        "import/prefer-default-export": "off"
     }
 }
