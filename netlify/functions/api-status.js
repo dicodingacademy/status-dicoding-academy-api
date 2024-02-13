@@ -1,6 +1,10 @@
-export const handler = async () => ({
-  statusCode: 200,
-  body: JSON.stringify({
-    message: 'Hello, World!',
-  }),
-});
+import { getDicodingAPIsStatus } from '../data';
+
+export const handler = async () => {
+  const payload = await getDicodingAPIsStatus();
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(payload),
+  };
+};
