@@ -1,7 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
-import { ChevronUpIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/vue/20/solid';
+import {
+  ChevronUpIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/vue/20/solid';
 import ApiStatusSkeletonLoader from '@/components/ApiStatusSkeletonLoader.vue';
 
 const isGlobalApiLoading = ref(true);
@@ -83,7 +88,7 @@ onMounted(() => {
             :disabled="isGlobalApiLoading"
             title="Click to refresh server status"
           >
-            Refresh Global
+            Refresh Netlify Network
           </button>
         </div>
 
@@ -96,20 +101,38 @@ onMounted(() => {
           <Disclosure
             v-for="apiServiceStatus in apiServiceStatuses"
             :key="apiServiceStatus.name"
-            class="text-lg"
+            class="text"
             as="article"
             v-slot="{ open }"
           >
             <DisclosureButton
               class="w-full flex justify-between items-center px-4 py-2 text-left border border-black"
             >
-              <span>{{ apiServiceStatus.name }}</span>
-              <ChevronUpIcon :class="open ? 'rotate-180 transform' : ''" class="h-5 w-5" />
+              <div>
+                <div>{{ apiServiceStatus.name }}</div>
+                <div class="text-sm text-slate-500">
+                  <a class="hover:underline" :href="apiServiceStatus.url" target="_blank">
+                    {{ apiServiceStatus.url }}
+                  </a>
+                </div>
+              </div>
+              <div class="flex items-center gap-1">
+                <CheckCircleIcon
+                  v-if="apiServiceStatus.localOk && apiServiceStatus.localOk"
+                  class="inline h-6 w-6 text-green-500"
+                />
+                <ExclamationTriangleIcon
+                  v-else-if="apiServiceStatus.ok || apiServiceStatus.localOk"
+                  class="inline h-6 w-6 text-orange-500"
+                ></ExclamationTriangleIcon>
+                <XCircleIcon v-else class="inline h-6 w-6 text-red-500" />
+                <ChevronUpIcon :class="open ? 'rotate-180 transform' : ''" class="h-5 w-5" />
+              </div>
             </DisclosureButton>
             <DisclosurePanel>
               <ul>
                 <li class="px-4 py-2 border-b border-x border-black">
-                  <span>Global: </span>
+                  <span>Netlify Network: </span>
                   <CheckCircleIcon
                     v-if="apiServiceStatus.ok"
                     class="inline h-6 w-6 text-green-500"
@@ -119,7 +142,7 @@ onMounted(() => {
                 <li class="px-4 py-2 border-b border-x border-black">
                   <div class="flex justify-between">
                     <div>
-                      Local:
+                      Your Network:
                       <span v-if="isLocalApiLoading" class="text-sm text-slate-500 select-none">
                         Loading...
                       </span>
