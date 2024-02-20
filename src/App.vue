@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import {
   ChevronUpIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
+  ArrowPathIcon,
 } from '@heroicons/vue/20/solid';
 import ApiStatusSkeletonLoader from '@/components/ApiStatusSkeletonLoader.vue';
 
@@ -88,7 +89,8 @@ onMounted(() => {
             :disabled="isGlobalApiLoading"
             title="Click to refresh server status"
           >
-            Refresh Netlify Network
+            <ArrowPathIcon class="inline h-5 w-5"></ArrowPathIcon>
+            Netlify Network
           </button>
         </div>
 
@@ -160,7 +162,7 @@ onMounted(() => {
                         class="px-2 rounded"
                         title="Click to refresh local status"
                       >
-                        Refresh
+                        <ArrowPathIcon class="inline h-5 w-5"></ArrowPathIcon>
                       </button>
                     </div>
                   </div>
