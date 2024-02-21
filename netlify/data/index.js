@@ -51,6 +51,10 @@ const dicodingAPIs = [
     name: 'Tracker Money API',
     url: 'https://tracker-money-api.dicoding.dev/v1',
   },
+  {
+    name: 'Classification API',
+    url: 'https://classification-api.dicoding.dev',
+  }
 ];
 
 async function isAPIOk({ name, url }) {
