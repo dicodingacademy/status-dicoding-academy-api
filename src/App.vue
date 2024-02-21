@@ -18,10 +18,10 @@ async function checkLocalApiStatus(url) {
   isLocalApiLoading.value = true;
 
   try {
-    const response = await fetch(url);
-    return response.ok;
-  } catch (error) {
-    return false;
+    const { ok, statusText } = await fetch(url);
+    return { ok, message: statusText };
+  } catch ({ message, stack, cause }) {
+    return { ok: false, message };
   } finally {
     isLocalApiLoading.value = false;
   }
@@ -36,19 +36,25 @@ async function getApiStatus() {
     const data = await response.json();
 
     apiServiceStatuses.value = await Promise.all(
-      data.map(async (item) => ({
-        localOk: await checkLocalApiStatus(item.url),
-        ...item,
-      })),
+      data.map(async (item) => {
+        const localStatus = await checkLocalApiStatus(item.url);
+        return { localStatus, ...item };
+      }),
     );
   } finally {
     isGlobalApiLoading.value = false;
   }
 }
 
+function displayStatusMessage({ localStatus }) {
+  return localStatus.message === 'Failed to fetch'
+    ? 'Probability CORS error. Check your console browser for detail, please.'
+    : localStatus.message;
+}
+
 async function refreshLocalApiStatus(url) {
   const currentApiStatus = apiServiceStatuses.value.find((item) => item.url === url);
-  currentApiStatus.localOk = await checkLocalApiStatus(url);
+  currentApiStatus.localStatus = await checkLocalApiStatus(url);
 }
 
 function refreshGlobalApiStatus() {
@@ -74,7 +80,7 @@ onMounted(() => {
             />
           </a>
         </div>
-        <div class="mt-3 text-white text-xl">Dicoding Academy API Services Status</div>
+        <div class="mt-3 text-white text-xl">Status Layanan-Layanan Dicoding Academy API</div>
       </div>
     </div>
   </header>
@@ -120,14 +126,15 @@ onMounted(() => {
               </div>
               <div class="flex items-center gap-1">
                 <CheckCircleIcon
-                  v-if="apiServiceStatus.localOk && apiServiceStatus.localOk"
+                  v-if="apiServiceStatus.localStatus.ok && apiServiceStatus.localStatus.ok"
                   class="inline h-6 w-6 text-green-500"
                 />
                 <ExclamationTriangleIcon
-                  v-else-if="apiServiceStatus.ok || apiServiceStatus.localOk"
+                  v-else-if="apiServiceStatus.ok || apiServiceStatus.localStatus.ok"
                   class="inline h-6 w-6 text-orange-500"
                 ></ExclamationTriangleIcon>
                 <XCircleIcon v-else class="inline h-6 w-6 text-red-500" />
+
                 <ChevronUpIcon :class="open ? 'rotate-180 transform' : ''" class="h-5 w-5" />
               </div>
             </DisclosureButton>
@@ -145,16 +152,20 @@ onMounted(() => {
                   <div class="flex justify-between">
                     <div>
                       Your Network:
-                      <span v-if="isLocalApiLoading" class="text-sm text-slate-500 select-none">
-                        Loading...
-                      </span>
-                      <span v-else>
-                        <CheckCircleIcon
-                          v-if="apiServiceStatus.localOk"
-                          class="inline h-6 w-6 text-green-500"
-                        />
-                        <XCircleIcon v-else class="inline h-6 w-6 text-red-500" />
-                      </span>
+                      <template v-if="isLocalApiLoading">
+                        <span class="text-sm text-slate-500 select-none">Loading...</span>
+                      </template>
+                      <template v-else>
+                        <span
+                          v-if="apiServiceStatus.localStatus.ok"
+                          :title="displayStatusMessage(apiServiceStatus)"
+                        >
+                          <CheckCircleIcon class="inline h-6 w-6 text-green-500" />
+                        </span>
+                        <span v-else :title="displayStatusMessage(apiServiceStatus)">
+                          <XCircleIcon class="inline h-6 w-6 text-red-500" />
+                        </span>
+                      </template>
                     </div>
                     <div>
                       <button
@@ -172,11 +183,32 @@ onMounted(() => {
           </Disclosure>
         </div>
       </div>
+
+      <div class="py-4">
+        <hr class="my-6" />
+
+        <div class="flex justify-around">
+          <div class="flex items-center gap-1">
+            <CheckCircleIcon class="inline h-6 w-6 text-green-500" />
+            Aktif
+          </div>
+          <div class="flex items-center gap-1">
+            <ExclamationTriangleIcon
+              class="inline h-6 w-6 text-orange-500"
+            ></ExclamationTriangleIcon>
+            Ada masalah
+          </div>
+          <div class="flex items-center gap-1">
+            <XCircleIcon class="inline h-6 w-6 text-red-500" />
+            Tidak aktif
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
   <footer>
-    <div class="container py-8">
+    <div class="container py-4">
       <hr class="my-6" />
       <div
         class="text-slate-500 flex justify-between items-center flex-col sm:flex-row gap-y-2 gap-x-4"
