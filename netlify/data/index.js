@@ -54,19 +54,15 @@ const dicodingAPIs = [
   {
     name: 'Classification API',
     url: 'https://classification-api.dicoding.dev',
-  }
+  },
 ];
 
 async function isAPIOk({ name, url }) {
   try {
     const { ok, status } = await fetch(url);
-    return {
-      name, url, ok, status,
-    };
+    return { name, url, ok, status };
   } catch (error) {
-    return {
-      name, url, ok: false, status: false,
-    };
+    return { name, url, ok: false, status: false };
   }
 }
 
